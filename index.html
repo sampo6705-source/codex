@@ -1,0 +1,514 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f6b61">
+  <title>星安交易日誌</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="styles.css?v=20260514-ui21">
+</head>
+<body>
+  <main class="app">
+    <section class="phone-topbar">
+      <button id="profileButton" class="profile-button" type="button" aria-label="個人設定">
+        <span id="profileAvatar">安</span>
+      </button>
+      <div class="hello-copy">
+        <span>嗨，<b id="greetingName">星安</b></span>
+        <small id="marketSessionLabel">台股收盤</small>
+      </div>
+      <div class="top-actions">
+        <label class="icon-toggle" title="開收盤介面變化">
+          <input id="sessionThemeToggle" type="checkbox" checked>
+          <span>☼</span>
+        </label>
+        <label class="icon-toggle" title="停損距離提醒">
+          <input id="stopAlertToggle" type="checkbox" checked>
+          <span>!</span>
+        </label>
+      </div>
+    </section>
+
+    <header class="hero">
+      <div class="hero-top">
+        <div class="hero-balance">
+          <span class="kicker">帳戶目前資金</span>
+          <strong id="heroAccountEquity" class="account-total">--</strong>
+          <span class="session-pill">含出入金與交易損益</span>
+        </div>
+        <div class="hero-side">
+          <span>目前累積損益</span>
+          <strong id="totalPnl" class="total-pnl">+0</strong>
+        </div>
+        <div class="hero-actions">
+          <button id="openBuySheet" class="add-button" type="button">＋買進</button>
+          <button id="openCashflowSheet" class="cashflow-entry-button" type="button">＋出入資金</button>
+        </div>
+      </div>
+      <div class="equity-panel">
+        <div class="equity-head">
+          <span>帳戶資金曲線</span>
+          <strong id="equityStatus">尚無平倉資料</strong>
+        </div>
+        <label class="chart-toggle"><input id="showStrategyLine" type="checkbox" checked>顯示交易績效線</label>
+        <svg id="equityChart" class="equity-chart" viewBox="0 0 320 180" preserveAspectRatio="none" role="img" aria-label="帳戶資金曲線"></svg>
+      </div>
+    </header>
+
+    <section class="quick-funds">
+      <div class="funds-summary">
+        <div><span>帳戶資金</span><strong id="quickAccountEquity">--</strong></div>
+        <div><span>策略損益</span><strong id="quickStrategyPnl">--</strong></div>
+      </div>
+    </section>
+
+    <section class="stock-strip">
+      <div class="stock-search">
+        <input id="stockSearch" type="search" autocomplete="off" placeholder="找股票：2330 或 台積電">
+        <div id="stockDropdown" class="stock-dropdown" hidden></div>
+      </div>
+      <div class="quote-chip">
+        <span>參考價</span>
+        <strong id="referencePrice">--</strong>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <div>
+        <span>持有</span>
+        <strong id="openCount">0</strong>
+      </div>
+      <div>
+        <span>平倉</span>
+        <strong id="closedCount">0</strong>
+      </div>
+      <div>
+        <span>區間</span>
+        <strong id="rangePnl">+0</strong>
+      </div>
+    </section>
+
+    <section id="lazyBrief" class="lazy-brief"></section>
+
+    <nav class="tabs">
+      <button class="tab-button active" type="button" data-tab="open"><span class="nav-icon">⌂</span><b>持有</b></button>
+      <button class="tab-button" type="button" data-tab="closed"><span class="nav-icon">✓</span><b>平倉</b></button>
+      <button class="tab-button" type="button" data-tab="calendar"><span class="nav-icon">□</span><b>日曆</b></button>
+      <button class="tab-button" type="button" data-tab="stats"><span class="nav-icon">▥</span><b>統計</b></button>
+    </nav>
+
+    <section class="content">
+      <div id="openPanel" class="tab-panel active">
+        <div class="panel-title-row">
+          <span id="openPanelTitle">持有個股</span>
+          <small><b id="openTitleCount">0</b> 檔持有 · 依停損風險排序</small>
+        </div>
+        <div id="openList" class="card-list"></div>
+      </div>
+      <div id="closedPanel" class="tab-panel">
+        <div class="panel-title-row">
+          <span id="closedPanelTitle">平倉紀錄</span>
+          <small><b id="closedTitleCount">0</b> 筆平倉 · 依時間排序</small>
+        </div>
+        <div id="closedList" class="card-list"></div>
+      </div>
+      <div id="calendarPanel" class="tab-panel">
+        <div class="calendar-card">
+          <div class="calendar-top">
+            <div>
+              <span class="calendar-kicker">交易日曆</span>
+              <strong id="calendarMonthLabel">--</strong>
+            </div>
+            <div class="calendar-arrows">
+              <button id="calendarPrev" type="button" aria-label="上個月">‹</button>
+              <button id="calendarNext" type="button" aria-label="下個月">›</button>
+            </div>
+          </div>
+          <div class="calendar-mode">
+            <button class="active" type="button" data-calendar-mode="plan">紀律</button>
+            <button type="button" data-calendar-mode="pnl">P&L</button>
+          </div>
+          <p id="calendarSummary" class="calendar-summary">平倉後會自動產生交易日曆。</p>
+          <div id="calendarHighlights" class="calendar-highlights"></div>
+          <div class="calendar-weekdays">
+            <span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span><span>Sun</span>
+          </div>
+          <div id="calendarGrid" class="calendar-grid"></div>
+        </div>
+      </div>
+      <div id="statsPanel" class="tab-panel">
+        <div class="stats-card">
+          <label>開始日期<input id="rangeStart" type="date"></label>
+          <label>結束日期<input id="rangeEnd" type="date"></label>
+          <button id="exportData" class="secondary-button" type="button">匯出 JSON</button>
+          <div class="account-card">
+            <h3>帳戶資金</h3>
+            <div class="report-grid">
+              <div><span>目前帳戶資金</span><strong id="accountEquity">--</strong></div>
+              <div><span>交易損益</span><strong id="accountTradePnl">--</strong></div>
+              <div><span>累計入金</span><strong id="accountDeposits">--</strong></div>
+              <div><span>累計出金</span><strong id="accountWithdrawals">--</strong></div>
+            </div>
+            <div class="field-grid">
+              <label>日期<input id="cashflowDate" type="date"></label>
+              <label>類型
+                <select id="cashflowType">
+                  <option value="initial">初始資金</option>
+                  <option value="deposit">入金</option>
+                  <option value="withdraw">出金</option>
+                </select>
+              </label>
+            </div>
+            <div class="field-grid">
+              <label>金額<input id="cashflowAmount" type="number" inputmode="numeric" min="0" step="1" placeholder="例如 100000"></label>
+              <label>備註<input id="cashflowNote" type="text" placeholder="例如 加碼資金"></label>
+            </div>
+            <button id="addCashflow" class="primary-button" type="button">新增資金紀錄</button>
+            <div id="cashflowList" class="cashflow-list"></div>
+          </div>
+          <div class="score-wrap">
+            <h3>策略條件必要性</h3>
+            <div id="conditionTable" class="condition-table"></div>
+          </div>
+          <div class="score-wrap">
+            <h3>每月交易報表</h3>
+            <div id="monthlyReport" class="monthly-report"></div>
+          </div>
+          <div class="score-wrap">
+            <h3>理由加權評分</h3>
+            <div id="scoreTable" class="score-table"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="sheetBackdrop" class="sheet-backdrop" hidden></div>
+
+  <section id="profileSheet" class="sheet" hidden aria-label="個人設定">
+    <form id="profileForm" class="sheet-form">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">
+        <div>
+          <span>個人設定</span>
+          <h2>你的交易日誌</h2>
+        </div>
+        <button class="icon-close" type="button" data-close-sheet>×</button>
+      </div>
+      <label>顯示名稱<input id="profileNameInput" type="text" maxlength="12" placeholder="例如 星安"></label>
+      <label>介面語言
+        <select id="profileLanguageInput" aria-label="介面語言">
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+        </select>
+      </label>
+      <label>一句提醒<input id="profileMottoInput" type="text" maxlength="28" placeholder="只做看得懂的交易"></label>
+      <div class="fee-settings profile-fee-settings">
+        <h3>手續費設定</h3>
+        <div class="field-grid">
+          <label>手續費折扣<input id="settingDiscount" type="number" min="0" max="1" step="0.01"></label>
+          <label>最低手續費<input id="settingMinFee" type="number" min="0" step="1"></label>
+        </div>
+        <div class="field-grid">
+          <label>股票證交稅<input id="settingStockTax" type="number" min="0" step="0.0001"></label>
+          <label>ETF 證交稅<input id="settingEtfTax" type="number" min="0" step="0.0001"></label>
+        </div>
+        <button id="saveFeeSettings" class="secondary-button" type="button">儲存費用設定</button>
+      </div>
+      <div class="danger-zone">
+        <div>
+          <strong id="clearJournalTitle">清空交易紀錄</strong>
+          <span id="clearJournalText">只刪除持有、平倉、出入金紀錄；個人設定與手續費不會刪除。</span>
+        </div>
+        <button id="clearJournalData" class="danger-button" type="button">一鍵清空</button>
+      </div>
+      <div class="test-zone">
+        <div>
+          <strong id="seedTestTitle">測試資料</strong>
+          <span id="seedTestText">建立 100 筆隨機交易紀錄，用來檢查大量資料下的畫面與統計。</span>
+        </div>
+        <button id="seedTestData" class="secondary-button" type="button">產生100筆</button>
+      </div>
+      <button class="primary-button" type="submit">保存個人資訊</button>
+    </form>
+  </section>
+
+  <section id="cashflowSheet" class="sheet" hidden aria-label="出入資金">
+    <form id="quickCashflowForm" class="sheet-form">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">
+        <div>
+          <span>帳戶資金</span>
+          <h2>出入資金</h2>
+        </div>
+        <button class="icon-close" type="button" data-close-sheet>×</button>
+      </div>
+      <div class="field-grid">
+        <label>日期<input id="quickCashflowDate" type="date" aria-label="資金日期"></label>
+        <label>類型
+          <select id="quickCashflowType" aria-label="資金類型">
+            <option value="deposit">入金</option>
+            <option value="withdraw">出金</option>
+            <option value="initial">初始資金</option>
+          </select>
+        </label>
+      </div>
+      <label>金額<input id="quickCashflowAmount" type="text" inputmode="numeric" placeholder="例如 100,000"></label>
+      <label>備註<input id="quickCashflowNote" type="text" maxlength="30" placeholder="例如 加碼資金、生活支出"></label>
+      <button id="quickAddCashflow" class="primary-button" type="submit">保存資金紀錄</button>
+    </form>
+  </section>
+
+  <section id="buySheet" class="sheet" hidden aria-label="新增買進">
+    <form id="buyForm" class="sheet-form">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">
+        <div>
+          <span>新增一筆</span>
+          <h2>買進紀錄</h2>
+        </div>
+        <button class="icon-close" type="button" data-close-sheet>×</button>
+      </div>
+
+      <div class="template-row">
+        <button type="button" data-lazy-action="quick">懶人快速買進</button>
+        <button type="button" data-lazy-action="copy-last">複製上一筆</button>
+        <button type="button" data-lazy-action="habit">套用習慣</button>
+        <button type="button" data-template="breakout">突破買進</button>
+        <button type="button" data-template="pullback">回測買進</button>
+        <button type="button" data-template="chip">籌碼轉強</button>
+        <button type="button" data-template="rebound">跌深反彈</button>
+      </div>
+      <button id="toggleAdvancedBuy" class="secondary-button compact-toggle" type="button" aria-expanded="false">顯示完整買進設定</button>
+
+      <div class="field-grid buy-advanced">
+        <label>買進日期<input id="entryTime" type="date" required></label>
+        <label>心情
+          <select id="mood">
+            <option value="冷靜">冷靜</option>
+            <option value="有把握">有把握</option>
+            <option value="怕錯過">怕錯過</option>
+            <option value="想凹單">想凹單</option>
+            <option value="亂了">亂了</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="buy-advanced">
+        <span class="choice-label">分析類型，像頁籤一樣切換</span>
+        <div id="analysisChoices" class="analysis-tabs"></div>
+      </div>
+
+      <div class="buy-advanced">
+        <div class="reason-head">
+          <span id="activeReasonTitle" class="choice-label">買進理由，可多選</span>
+          <span id="reasonScoreHint" class="score-hint">評分：--</span>
+        </div>
+        <div id="reasonChoices" class="choice-grid"></div>
+      </div>
+
+      <div class="mini-score-card buy-advanced">
+        <span>本次買進理由評分</span>
+        <strong id="currentReasonScore">--</strong>
+        <p id="currentReasonScoreText">選理由後會依照條件權重計分。</p>
+      </div>
+
+      <div class="field-grid">
+        <label>買進價<input id="entryPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="例如 612"></label>
+        <label>停損價<input id="stopPrice" type="number" inputmode="decimal" min="0" step="0.01" placeholder="例如 590"></label>
+      </div>
+      <div class="risk-preview">
+        <span>風險金額試算</span>
+        <strong id="riskPreview">--</strong>
+        <p id="riskPreviewText">輸入買進價、停損價與數量後自動計算。</p>
+      </div>
+
+      <div class="field-grid">
+        <label>數量<input id="shareQuantity" type="number" inputmode="numeric" min="1" step="1" value="1"></label>
+        <label>單位
+          <select id="shareUnit">
+            <option value="lot">張</option>
+            <option value="share">零股</option>
+          </select>
+        </label>
+      </div>
+
+      <label class="buy-advanced">備註<input id="note" type="text" placeholder="一句話就好"></label>
+
+      <div class="checklist buy-advanced">
+        <label><input id="checkStop" type="checkbox"> 有設定停損</label>
+        <label><input id="checkRisk" type="checkbox"> 這筆風險金額可以接受</label>
+        <label><input id="checkEmotion" type="checkbox"> 不是因為怕錯過才買</label>
+      </div>
+
+      <button class="primary-button" type="submit">存成持有單</button>
+    </form>
+  </section>
+
+  <section id="editSheet" class="sheet" hidden aria-label="編輯持有單">
+    <form id="editForm" class="sheet-form">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">
+        <div>
+          <span id="editSubtitle">持有單</span>
+          <h2>快速編輯</h2>
+        </div>
+        <button class="icon-close" type="button" data-close-sheet>×</button>
+      </div>
+      <input id="editId" type="hidden">
+      <div class="field-grid">
+        <label>買進日期<input id="editEntryTime" type="date" required></label>
+        <label>心情
+          <select id="editMood">
+            <option value="冷靜">冷靜</option>
+            <option value="有把握">有把握</option>
+            <option value="怕錯過">怕錯過</option>
+            <option value="想凹單">想凹單</option>
+            <option value="亂了">亂了</option>
+          </select>
+        </label>
+      </div>
+      <div>
+        <span class="choice-label">分析類型，像頁籤一樣切換</span>
+        <div id="editAnalysisChoices" class="analysis-tabs"></div>
+      </div>
+      <div>
+        <div class="reason-head">
+          <span id="editActiveReasonTitle" class="choice-label">買進理由，可多選</span>
+          <span id="editReasonScoreHint" class="score-hint">評分：--</span>
+        </div>
+        <div id="editReasonChoices" class="choice-grid"></div>
+      </div>
+      <div class="mini-score-card">
+        <span>編輯後理由評分</span>
+        <strong id="editCurrentReasonScore">--</strong>
+        <p id="editCurrentReasonScoreText">調整理由後會重新計分。</p>
+      </div>
+      <div class="field-grid">
+        <label>買進價<input id="editEntryPrice" type="number" inputmode="decimal" step="0.01" required></label>
+        <label>停損價<input id="editStopPrice" type="number" inputmode="decimal" step="0.01"></label>
+      </div>
+      <div class="risk-preview">
+        <span>風險金額試算</span>
+        <strong id="editRiskPreview">--</strong>
+        <p id="editRiskPreviewText">修改價格、停損價或數量後自動計算。</p>
+      </div>
+      <div class="field-grid">
+        <label>數量<input id="editShareQuantity" type="number" inputmode="numeric" min="1" step="1"></label>
+        <label>單位
+          <select id="editShareUnit">
+            <option value="lot">張</option>
+            <option value="share">零股</option>
+          </select>
+        </label>
+      </div>
+      <label>備註<input id="editNote" type="text"></label>
+      <button class="primary-button" type="submit">儲存</button>
+    </form>
+  </section>
+
+  <section id="closeSheet" class="sheet" hidden aria-label="平倉">
+    <form id="closeForm" class="sheet-form">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">
+        <div>
+          <span id="closeSubtitle">持有單</span>
+          <h2>平倉結果</h2>
+        </div>
+        <button class="icon-close" type="button" data-close-sheet>×</button>
+      </div>
+      <input id="closeId" type="hidden">
+      <div class="field-grid">
+        <label>平倉日期<input id="exitTime" type="date" required></label>
+        <label>平倉價<input id="exitPrice" type="number" inputmode="decimal" min="0" step="0.01" required></label>
+      </div>
+      <div class="quick-close-row">
+        <button type="button" data-fast-plan="照計畫">照計畫</button>
+        <button type="button" data-fast-plan="太早賣">太早賣</button>
+        <button type="button" data-fast-plan="沒紀律">沒紀律</button>
+      </div>
+      <div id="quickCloseFeedback" class="quick-close-feedback">先選一個平倉結果，會自動帶入檢討。</div>
+      <button id="toggleCloseReview" class="secondary-button compact-toggle" type="button" aria-expanded="false">補充詳細檢討</button>
+      <label class="close-advanced">平倉原因
+        <select id="exitReason" required>
+          <option value="停利">停利</option>
+          <option value="停損">停損</option>
+          <option value="跌破支撐">跌破支撐</option>
+          <option value="到達目標價">到達目標價</option>
+          <option value="型態轉弱">型態轉弱</option>
+          <option value="資金轉移">資金轉移</option>
+          <option value="紀律出場">紀律出場</option>
+          <option value="情緒出場">情緒出場</option>
+          <option value="手動出場">手動出場</option>
+          <option value="其他">其他</option>
+        </select>
+      </label>
+      <label class="close-advanced">有沒有照計畫
+        <select id="planFollowed" required>
+          <option value="照計畫">照計畫</option>
+          <option value="太早賣">太早賣</option>
+          <option value="凹單">凹單</option>
+          <option value="沒紀律">沒紀律</option>
+          <option value="沒停損">沒停損</option>
+          <option value="被情緒影響">被情緒影響</option>
+          <option value="臨時改計畫">臨時改計畫</option>
+        </select>
+      </label>
+      <label class="close-advanced">平倉後檢討，可多選
+        <select id="reviewMistakes" multiple size="5">
+          <option value="照計畫執行">照計畫執行</option>
+          <option value="追高怕錯過">追高怕錯過</option>
+          <option value="過度交易">過度交易</option>
+          <option value="報復性交易">報復性交易</option>
+          <option value="沒有停損">沒有停損</option>
+          <option value="停損往下移">停損往下移</option>
+          <option value="部位太大">部位太大</option>
+          <option value="凹單不認錯">凹單不認錯</option>
+          <option value="太早停利">太早停利</option>
+          <option value="消息面衝動">消息面衝動</option>
+          <option value="沒照原本計畫">沒照原本計畫</option>
+          <option value="進場太急">進場太急</option>
+        </select>
+      </label>
+      <label class="close-advanced">平倉備註<input id="exitNote" type="text" placeholder="這筆最後學到什麼？"></label>
+      <div class="review-line close-advanced" id="reviewLinePreview">儲存後會自動產生復盤一句話。</div>
+      <button class="primary-button" type="submit">存成平倉單</button>
+    </form>
+  </section>
+
+  <template id="openTemplate">
+    <article class="trade-card">
+      <div class="card-main">
+        <div>
+          <strong class="trade-title"></strong>
+          <span class="trade-meta"></span>
+          <span class="price-alert"></span>
+          <div class="tag-row"></div>
+        </div>
+        <span class="risk-pill"></span>
+      </div>
+      <div class="card-actions">
+        <button class="edit-button" type="button">編輯</button>
+        <button class="close-button" type="button">平倉</button>
+      </div>
+    </article>
+  </template>
+
+  <template id="closedTemplate">
+    <article class="trade-card">
+      <div class="card-main">
+        <div>
+          <strong class="trade-title"></strong>
+          <span class="trade-meta"></span>
+          <span class="review-line closed-review"></span>
+        </div>
+        <strong class="closed-pnl"></strong>
+      </div>
+      <div class="tag-row"></div>
+    </article>
+  </template>
+
+  <script src="app.js?v=20260514-ui21"></script>
+</body>
+</html>
