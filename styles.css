@@ -3996,3 +3996,597 @@ button,
   font-size: 11px;
   font-weight: 950;
 }
+
+/* 2026-05 UI organization pass */
+:root {
+  --surface-0: #080b0d;
+  --surface-1: #101417;
+  --surface-2: #171d22;
+  --surface-3: #202832;
+  --stroke-strong: rgba(255, 255, 255, .14);
+  --stroke-soft: rgba(255, 255, 255, .08);
+  --text-main: #f7fbf8;
+  --text-sub: rgba(247, 251, 248, .66);
+  --text-dim: rgba(247, 251, 248, .46);
+  --green: #4fd19f;
+  --green-deep: #1d9d78;
+  --yellow: #efc857;
+  --pink: #ff708f;
+  --cyan: #72d7ff;
+  --radius-control: 14px;
+  --radius-panel: 18px;
+  --radius-large: 24px;
+}
+
+html,
+body {
+  min-width: 320px;
+}
+
+body {
+  background:
+    radial-gradient(circle at 50% -120px, rgba(79, 209, 159, .28), transparent 330px),
+    radial-gradient(circle at 100% 8%, rgba(239, 200, 87, .12), transparent 260px),
+    linear-gradient(180deg, #101b19 0%, var(--surface-0) 52%, #050607 100%) !important;
+}
+
+body[data-market-session="closed"] {
+  background:
+    radial-gradient(circle at 50% -120px, rgba(114, 118, 255, .22), transparent 330px),
+    radial-gradient(circle at 100% 8%, rgba(255, 112, 143, .1), transparent 260px),
+    linear-gradient(180deg, #131720 0%, var(--surface-0) 52%, #050607 100%) !important;
+}
+
+.app {
+  width: min(100%, 460px) !important;
+  grid-template-rows: auto auto auto 1fr !important;
+  gap: 12px !important;
+  padding: 14px 14px 92px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .045), rgba(255, 255, 255, .018)),
+    var(--surface-1) !important;
+  border-color: var(--stroke-soft) !important;
+}
+
+.phone-topbar {
+  grid-template-columns: 44px 1fr auto !important;
+  min-height: 46px !important;
+  gap: 10px !important;
+}
+
+.profile-button,
+.icon-toggle {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: var(--radius-control) !important;
+  background: rgba(255, 255, 255, .055) !important;
+}
+
+.hello-copy {
+  text-align: left !important;
+}
+
+.hello-copy span {
+  overflow: hidden;
+  color: var(--text-main) !important;
+  font-size: 13px !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hello-copy small {
+  max-width: 100%;
+  overflow: hidden;
+  background: rgba(79, 209, 159, .12) !important;
+  color: rgba(202, 255, 235, .76) !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hero {
+  gap: 12px !important;
+  padding: 14px !important;
+  border: 1px solid var(--stroke-soft) !important;
+  border-radius: var(--radius-large) !important;
+  background:
+    radial-gradient(circle at 82% 0%, rgba(79, 209, 159, .2), transparent 150px),
+    linear-gradient(180deg, #182321 0%, #101517 100%) !important;
+  box-shadow: 0 22px 58px rgba(0, 0, 0, .36) !important;
+}
+
+.hero::before {
+  right: 8px !important;
+  top: 72px !important;
+  color: rgba(255, 255, 255, .035) !important;
+  font-size: 42px !important;
+}
+
+.hero-top {
+  grid-template-columns: minmax(0, 1fr) 104px !important;
+  gap: 12px !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.hero-balance {
+  min-width: 0;
+}
+
+.account-total {
+  max-width: 100%;
+  overflow: hidden;
+  margin: 4px 0 8px !important;
+  font-size: clamp(34px, 8vw, 46px) !important;
+  line-height: 1 !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.session-pill {
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.hero-actions {
+  width: 104px !important;
+  grid-template-rows: repeat(2, 40px) !important;
+  gap: 8px !important;
+}
+
+.hero-actions .add-button,
+.hero-actions .cashflow-entry-button {
+  width: 104px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  border-radius: var(--radius-control) !important;
+  font-size: 12px !important;
+}
+
+.hero-side {
+  max-width: none !important;
+  border: 1px solid var(--stroke-soft) !important;
+  border-radius: var(--radius-control) !important;
+  background: rgba(0, 0, 0, .22) !important;
+}
+
+.equity-panel {
+  min-height: 150px !important;
+  border: 1px solid rgba(239, 200, 87, .22) !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(circle at 84% 18%, rgba(255, 255, 255, .5), transparent 44px),
+    linear-gradient(135deg, #fff0a7 0%, #efc857 58%, #c98c0d 100%) !important;
+}
+
+.equity-head {
+  gap: 8px !important;
+}
+
+.equity-head strong {
+  max-width: 54% !important;
+}
+
+.equity-chart {
+  height: 108px !important;
+}
+
+.stock-strip {
+  grid-template-columns: minmax(0, 1fr) 88px !important;
+  gap: 10px !important;
+}
+
+#stockSearch,
+.quote-chip {
+  height: 56px !important;
+  min-height: 56px !important;
+  border-radius: var(--radius-panel) !important;
+}
+
+#stockSearch {
+  font-size: 16px !important;
+}
+
+#stockSearch::placeholder {
+  font-size: 14px !important;
+}
+
+.quote-chip strong {
+  font-size: 16px !important;
+}
+
+.content {
+  min-height: 0 !important;
+  border-radius: var(--radius-large) !important;
+  background: rgba(8, 11, 13, .72) !important;
+  padding: 12px !important;
+}
+
+.panel-title-row {
+  gap: 10px !important;
+  margin-bottom: 10px !important;
+}
+
+.panel-title-row span {
+  font-size: 15px !important;
+}
+
+.panel-title-row small {
+  min-width: 0;
+  overflow: hidden;
+  text-align: right;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+#openList,
+#closedList,
+.tab-panel.active {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(79, 209, 159, .42) transparent;
+}
+
+#openList,
+#closedList {
+  padding-right: 6px !important;
+}
+
+.trade-card {
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  border-radius: var(--radius-panel) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .024)),
+    var(--surface-2) !important;
+  padding: 12px !important;
+}
+
+#openList .trade-card {
+  grid-template-rows: auto auto !important;
+}
+
+.trade-card .card-main {
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 10px !important;
+}
+
+.trade-title {
+  font-size: 15px !important;
+}
+
+.trade-meta {
+  -webkit-line-clamp: 3 !important;
+}
+
+.risk-pill {
+  max-width: 86px;
+  overflow: hidden;
+  padding: 6px 9px !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trade-card .card-actions {
+  gap: 10px !important;
+}
+
+.trade-card .card-actions button,
+.primary-button,
+.secondary-button,
+.danger-button {
+  min-height: 42px !important;
+  border-radius: var(--radius-control) !important;
+}
+
+.tabs {
+  left: 14px !important;
+  right: 14px !important;
+  bottom: 12px !important;
+  gap: 6px !important;
+  border-radius: 22px !important;
+  background: rgba(20, 25, 30, .82) !important;
+  padding: 7px !important;
+}
+
+.tab-button {
+  min-height: 54px !important;
+  border-radius: 16px !important;
+}
+
+.tab-button.active {
+  background: linear-gradient(135deg, var(--green), var(--green-deep)) !important;
+}
+
+.stats-card,
+.calendar-card,
+.sheet-form {
+  border-radius: var(--radius-large) !important;
+}
+
+.stats-card {
+  gap: 14px !important;
+}
+
+.stats-card > label,
+.stats-card > .secondary-button {
+  width: 100%;
+}
+
+.account-card,
+.score-wrap,
+.fee-settings,
+.test-zone,
+.danger-zone {
+  border-radius: var(--radius-panel) !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .022)),
+    var(--surface-2) !important;
+}
+
+.report-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.calendar-card {
+  gap: 12px !important;
+  padding: 14px !important;
+}
+
+.calendar-highlights {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+}
+
+#calendarGrid,
+.app[data-active-tab="calendar"] .calendar-grid {
+  grid-auto-rows: minmax(74px, 1fr) !important;
+  min-height: 420px !important;
+}
+
+#calendarGrid .calendar-day,
+.app[data-active-tab="calendar"] .calendar-day {
+  padding: 7px 5px !important;
+}
+
+.sheet {
+  width: min(100%, 460px) !important;
+  padding: 0 10px 10px !important;
+}
+
+.sheet-form {
+  gap: 14px !important;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .03)),
+    #11161a !important;
+}
+
+.field-grid {
+  gap: 10px !important;
+}
+
+.choice-grid,
+.analysis-tabs,
+.template-row,
+.quick-close-row {
+  gap: 8px !important;
+}
+
+.choice-chip,
+.analysis-tab,
+.template-row button,
+.quick-close-row button {
+  min-height: 38px;
+  padding: 8px 12px !important;
+}
+
+@media (max-width: 380px) {
+  .app {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .hero-top {
+    grid-template-columns: minmax(0, 1fr) 92px !important;
+  }
+
+  .hero-actions,
+  .hero-actions .add-button,
+  .hero-actions .cashflow-entry-button {
+    width: 92px !important;
+  }
+
+  .account-total {
+    font-size: 32px !important;
+  }
+
+  .stock-strip {
+    grid-template-columns: minmax(0, 1fr) 78px !important;
+  }
+
+  .quote-chip {
+    padding: 8px !important;
+  }
+
+  .calendar-highlights {
+    grid-template-columns: 1fr !important;
+  }
+
+  .field-grid,
+  .report-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (min-width: 540px) {
+  .app {
+    height: min(100dvh, 920px) !important;
+    border-radius: 34px !important;
+  }
+}
+
+@media (max-height: 780px) {
+  .app {
+    gap: 9px !important;
+    padding-top: 10px !important;
+  }
+
+  .phone-topbar {
+    min-height: 40px !important;
+  }
+
+  .hero {
+    gap: 9px !important;
+    padding: 12px !important;
+  }
+
+  .account-total {
+    font-size: clamp(31px, 7.4vw, 40px) !important;
+  }
+
+  .equity-panel {
+    min-height: 132px !important;
+  }
+
+  .equity-chart {
+    height: 92px !important;
+  }
+
+  .tab-button {
+    min-height: 48px !important;
+  }
+}
+
+/* Review fixes: chart readability, closed cards, report scope */
+.chart-toggle {
+  gap: 7px !important;
+  background: rgba(25, 18, 8, .18) !important;
+  color: rgba(34, 24, 8, .92) !important;
+  padding: 5px 9px !important;
+  border-radius: 999px !important;
+  text-shadow: none !important;
+}
+
+.chart-toggle input {
+  accent-color: #0f8f6e !important;
+}
+
+.chart-date-label rect {
+  fill: rgba(35, 25, 8, .64);
+}
+
+.chart-date {
+  fill: #fff7d8 !important;
+  font-size: 9px !important;
+  font-weight: 950 !important;
+  paint-order: stroke;
+  stroke: rgba(35, 25, 8, .32);
+  stroke-width: .8px;
+}
+
+.closed-meta {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px !important;
+  margin-top: 8px !important;
+  overflow: visible !important;
+  -webkit-line-clamp: unset !important;
+  -webkit-box-orient: unset !important;
+}
+
+.closed-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  max-width: 100%;
+  border: 1px solid rgba(255, 255, 255, .08);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .045);
+  color: rgba(247, 251, 248, .74);
+  padding: 4px 8px;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.2;
+}
+
+#closedList .trade-card {
+  min-height: auto !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+#closedList .trade-card .card-main {
+  align-items: start !important;
+}
+
+.closed-pnl {
+  white-space: nowrap;
+}
+
+.report-title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.report-title-row h3 {
+  min-width: 0;
+  margin: 0 !important;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.report-scope-tabs {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  min-width: 154px;
+  border: 1px solid var(--stroke-soft);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .045);
+  padding: 4px;
+}
+
+.report-scope-tabs button {
+  min-height: 30px;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--text-sub) !important;
+  padding: 0 8px !important;
+  font-size: 11px !important;
+  font-weight: 950 !important;
+  box-shadow: none !important;
+}
+
+.report-scope-tabs button.active {
+  background: linear-gradient(135deg, var(--green), var(--green-deep)) !important;
+  color: #06140f !important;
+}
+
+.monthly-report .report-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+}
+
+.pnl-bar-row {
+  grid-template-columns: minmax(46px, auto) minmax(0, 1fr) auto !important;
+}
+
+.pnl-bar-row em {
+  font-style: normal;
+  font-weight: 950;
+  white-space: nowrap;
+}
+
+@media (max-width: 380px) {
+  .report-title-row {
+    grid-template-columns: 1fr;
+  }
+
+  .report-scope-tabs {
+    width: 100%;
+  }
+}

@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0f6b61">
   <title>星安交易日誌</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="styles.css?v=20260514-ui21">
+  <link rel="stylesheet" href="styles.css?v=20260515-ui23">
 </head>
 <body>
   <main class="app">
@@ -171,8 +171,15 @@
             <h3>策略條件必要性</h3>
             <div id="conditionTable" class="condition-table"></div>
           </div>
-          <div class="score-wrap">
-            <h3>每月交易報表</h3>
+          <div class="score-wrap report-scope-card">
+            <div class="report-title-row">
+              <h3 id="tradeReportTitle">交易報表</h3>
+              <div class="report-scope-tabs" aria-label="交易報表範圍">
+                <button class="active" type="button" data-report-scope="all">全部</button>
+                <button type="button" data-report-scope="month">當月</button>
+                <button type="button" data-report-scope="range">區間</button>
+              </div>
+            </div>
             <div id="monthlyReport" class="monthly-report"></div>
           </div>
           <div class="score-wrap">
@@ -509,6 +516,6 @@
     </article>
   </template>
 
-  <script src="app.js?v=20260514-ui21"></script>
+  <script src="app.js?v=20260515-ui23"></script>
 </body>
 </html>

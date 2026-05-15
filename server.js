@@ -3,6 +3,7 @@ const https = require("https");
 const { URL } = require("url");
 
 const port = Number(process.env.PORT || 8787);
+const host = process.env.HOST || "0.0.0.0";
 const cache = new Map();
 const fallbackStocks = [
   { code: "0050", name: "元大台灣50", market: "上市", suffix: "TW", close: null, referencePrice: null },
@@ -219,6 +220,6 @@ const server = http.createServer(async (req, res) => {
   }
 });
 
-server.listen(port, () => {
+server.listen(port, host, () => {
   console.log(`Trade journal app: http://localhost:${port}`);
 });

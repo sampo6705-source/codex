@@ -106,6 +106,7 @@ const state = {
   settings: { ...defaultAppSettings },
   calendarMonth: null,
   calendarMode: "plan",
+  reportScope: "all",
 };
 
 function nowForInput() {
@@ -122,6 +123,12 @@ function currentDate() {
 
 function currentMonth() {
   return currentDate().slice(0, 7);
+}
+
+function formatChartDateLabel(dateText) {
+  const date = new Date(`${dateText}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return String(dateText || "").slice(5).replace("-", "/");
+  return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 function formatMoney(value) {
@@ -183,6 +190,25 @@ function joinLabels(value) {
 function formatPrice(value) {
   const num = Number(value);
   return Number.isFinite(num) && num > 0 ? num.toFixed(2).replace(/\.00$/, "") : "--";
+}
+
+function latestKnownPrice(code, market = "") {
+  const livePrice = Number(state.lastPrices[code]);
+  if (Number.isFinite(livePrice) && livePrice > 0) return livePrice;
+  const stock = state.stocks.find((item) => item.code === code && (!market || item.market === market))
+    || state.stocks.find((item) => item.code === code);
+  const fallback = Number(stock?.price || stock?.close || stock?.referencePrice);
+  return Number.isFinite(fallback) && fallback > 0 ? fallback : null;
+}
+
+function latestKnownPriceText(code, market = "") {
+  const price = latestKnownPrice(code, market);
+  return price ? formatPrice(price) : "";
+}
+
+function setInputValueIfEmpty(id, value) {
+  const input = $(id);
+  if (input && !input.value && value) input.value = value;
 }
 
 function normalizeJournal(value) {
@@ -976,7 +1002,11 @@ async function updateQuote() {
     const price = quote.price || quote.close;
     state.lastPrices[stock.code] = Number(price) || null;
     $("referencePrice").textContent = formatPrice(price);
-    if (price) $("entryPrice").value = formatPrice(price);
+    if (price) {
+      $("entryPrice").value = formatPrice(price);
+      setInputValueIfEmpty("stopPrice", formatPrice(price));
+      renderRiskPreview("");
+    }
     renderAll();
   } catch {
     $("referencePrice").textContent = "--";
@@ -1112,7 +1142,7 @@ function openCloseSheet(id) {
   $("closeId").value = id;
   $("closeSubtitle").textContent = `${trade.code} ${trade.name}`;
   $("exitTime").value = currentDate();
-  $("exitPrice").value = "";
+  $("exitPrice").value = latestKnownPriceText(trade.code, trade.market);
   $("exitNote").value = "";
   $("exitReason").value = "停利";
   $("planFollowed").value = "照計畫";
@@ -1439,7 +1469,22 @@ function renderClosed(closedTrades) {
     const buyFee = trade.buyFee ?? buyCost(trade.entryPrice, trade.shares).fee;
     const sellFee = trade.sellFee ?? sellProceeds(trade.exitPrice, trade.shares).fee;
     const tax = trade.tax ?? sellProceeds(trade.exitPrice, trade.shares).tax;
-    node.querySelector(".trade-meta").textContent = `${trade.entryPrice} → ${trade.exitPrice} · ${trade.shares} 股 · 買手續 ${formatMoney(buyFee)} · 賣手續 ${formatMoney(sellFee)} · 證交稅 ${formatMoney(tax)} · ${trade.exitReason} · ${trade.planFollowed || "未記錄計畫"}`;
+    const meta = node.querySelector(".trade-meta");
+    meta.classList.add("closed-meta");
+    meta.textContent = "";
+    [
+      `買 ${trade.entryPrice} → 賣 ${trade.exitPrice}`,
+      `${trade.shares} 股`,
+      `買手續 ${formatMoney(buyFee)}`,
+      `賣手續 ${formatMoney(sellFee)}`,
+      `證交稅 ${formatMoney(tax)}`,
+      trade.exitReason,
+      trade.planFollowed || "未記錄計畫",
+    ].filter(Boolean).forEach((text) => {
+      const item = document.createElement("span");
+      item.textContent = text;
+      meta.appendChild(item);
+    });
     node.querySelector(".closed-review").textContent = trade.reviewLine || generateReviewLine(trade);
     const row = node.querySelector(".tag-row");
     [...toArray(trade.analysisType), ...toArray(trade.reason), ...toArray(trade.autoTags || autoTagsForTrade(trade)), ...(trade.reviewMistakes || [])].filter(Boolean).forEach((tag) => addTag(row, tag));
@@ -1477,9 +1522,39 @@ function renderStats(journal) {
   $("rangePnl").classList.toggle("profit", rangeTotal > 0);
   $("rangePnl").classList.toggle("loss", rangeTotal < 0);
   renderHeroRangeStats(journal, rangeTotal, to);
-  renderMonthlyReport(journal.closed);
+  const report = reportScopeTrades(journal.closed, from, to);
+  renderReportScopeTabs();
+  renderMonthlyReport(report.trades, report.label);
   renderScoreTable(journal.closed);
   renderConditionTable(journal.closed);
+}
+
+function reportScopeTrades(closedTrades, from = "", to = "") {
+  const scope = state.reportScope || "all";
+  if (scope === "range") {
+    const trades = closedTrades.filter((trade) => {
+      const exitTime = trade.exitTime || "";
+      if (from && exitTime < from) return false;
+      if (to && exitTime > to) return false;
+      return true;
+    });
+    const label = from || to ? `${from || "最早"} 到 ${to || "現在"}` : "自訂區間";
+    return { trades, label };
+  }
+  if (scope === "month") {
+    const month = ($("rangeEnd").value || currentDate()).slice(0, 7);
+    return {
+      trades: closedTrades.filter((trade) => (trade.exitTime || "").slice(0, 7) === month),
+      label: `${month} 當月`,
+    };
+  }
+  return { trades: closedTrades, label: "全部交易紀錄" };
+}
+
+function renderReportScopeTabs() {
+  document.querySelectorAll("[data-report-scope]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.reportScope === state.reportScope);
+  });
 }
 
 function cashflowLabel(type) {
@@ -1843,7 +1918,7 @@ function renderEquityChart(journal) {
     ? trades.map((_, index) => index)
     : [0, Math.floor((trades.length - 1) / 2), trades.length - 1];
   const dateLabels = [...new Set(labelIndexes)].map((index) => ({
-    text: trades[index].date.slice(5).replace("-", "/"),
+    text: formatChartDateLabel(trades[index].date),
     x: points[index].x,
     anchor: index === 0 ? "start" : index === trades.length - 1 ? "end" : "middle",
   }));
@@ -1880,7 +1955,12 @@ function renderEquityChart(journal) {
     ${$("showStrategyLine")?.checked ? strategyDots : ""}
     ${tradeDots}
     <circle class="chart-dot account-dot" cx="${last.x.toFixed(1)}" cy="${last.y.toFixed(1)}" r="4"></circle>
-    ${dateLabels.map((label) => `<text class="chart-date" x="${label.x.toFixed(1)}" y="${height - 2}" text-anchor="${label.anchor}">${label.text}</text>`).join("")}
+    ${dateLabels.map((label) => {
+      const boxWidth = 32;
+      const rectX = label.anchor === "start" ? label.x - 2 : label.anchor === "end" ? label.x - boxWidth + 2 : label.x - boxWidth / 2;
+      const textX = label.anchor === "start" ? label.x + 2 : label.anchor === "end" ? label.x - 2 : label.x;
+      return `<g class="chart-date-label"><rect x="${rectX.toFixed(1)}" y="${height - 15}" width="${boxWidth}" height="13" rx="6"></rect><text class="chart-date" x="${textX.toFixed(1)}" y="${height - 5}" text-anchor="${label.anchor}">${label.text}</text></g>`;
+    }).join("")}
     ${trades.map((day, index) => `
       <rect class="chart-hit" x="${(points[index].x - hitWidth / 2).toFixed(1)}" y="0" width="${hitWidth.toFixed(1)}" height="${height}" fill="transparent">
         <title>${day.date}
@@ -1937,12 +2017,11 @@ function setupChartCursor(days, points, accountValues, strategyValues) {
   hide();
 }
 
-function renderMonthlyReport(closedTrades) {
-  const month = ($("rangeEnd").value || currentDate()).slice(0, 7);
-  const trades = closedTrades.filter((trade) => (trade.exitTime || "").slice(0, 7) === month);
+function renderMonthlyReport(trades, label = "全部交易紀錄") {
   const box = $("monthlyReport");
+  if ($("tradeReportTitle")) $("tradeReportTitle").textContent = `交易報表 · ${label}`;
   if (!trades.length) {
-    box.innerHTML = `<p class="empty-note">${month} 還沒有平倉資料。</p>`;
+    box.innerHTML = `<p class="empty-note">${label} 還沒有平倉資料。</p>`;
     return;
   }
   const total = trades.reduce((sum, trade) => sum + Number(trade.pnl || 0), 0);
@@ -2304,6 +2383,12 @@ function setup() {
   });
   $("openBuySheet").addEventListener("click", () => {
     ensureLazyBuyDefaults();
+    if (state.selectedStock) {
+      const price = latestKnownPriceText(state.selectedStock.code, state.selectedStock.market);
+      setInputValueIfEmpty("entryPrice", price);
+      setInputValueIfEmpty("stopPrice", price);
+      renderRiskPreview("");
+    }
     setSheetAdvanced("buyForm", "toggleAdvancedBuy", false, "顯示完整買進設定", "收起完整買進設定");
     openSheet("buySheet");
   });
@@ -2324,8 +2409,20 @@ function setup() {
     $(id).addEventListener("input", () => renderRiskPreview("edit"));
     $(id).addEventListener("change", () => renderRiskPreview("edit"));
   });
-  $("rangeStart").addEventListener("input", renderAll);
-  $("rangeEnd").addEventListener("input", renderAll);
+  document.querySelectorAll("[data-report-scope]").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.reportScope = button.dataset.reportScope || "all";
+      renderAll();
+    });
+  });
+  $("rangeStart").addEventListener("input", () => {
+    state.reportScope = "range";
+    renderAll();
+  });
+  $("rangeEnd").addEventListener("input", () => {
+    state.reportScope = "range";
+    renderAll();
+  });
   $("exportData").addEventListener("click", exportData);
   if ($("importData")) $("importData").addEventListener("change", importData);
   $("saveFeeSettings").addEventListener("click", saveFeeSettings);
